@@ -1,7 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const Partner = require('../models/partner');
 const authenticate = require('../authenticate');
+const Partner = require('../models/partner');
 const cors = require('./cors');
 
 const partnerRouter = express.Router();
@@ -11,16 +11,16 @@ partnerRouter.use(bodyParser.json());
 partnerRouter.route('/')
 .options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
 .get(cors.cors, (req, res, next) => {
-    Partner.find() //queries database for all docs that were instantiated using the Partner model
+    Partner.find()
     .then(partners => {
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
-        res.json(partners);    //send json data to the client to the response stream, also automatically closes the stream afterwards, so no need for a res.end() method
+        res.json(partners);
     })
     .catch(err => next(err));
 })
 .post(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
-    Partner.create(req.body)   //create new Partner doc and save to server
+    Partner.create(req.body)
     .then(partner => {
         console.log('Partner Created ', partner);
         res.statusCode = 200;
@@ -29,7 +29,7 @@ partnerRouter.route('/')
     })
     .catch(err => next(err));
 })
-.put(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
+.put(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res) => {
     res.statusCode = 403;
     res.end('PUT operation not supported on /partners');
 })
@@ -44,32 +44,32 @@ partnerRouter.route('/')
 });
 
 partnerRouter.route('/:partnerId')
-.options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
-.get(cors.cors, (req, res, next) => {
+.options(cors.corsWithOptions, (req, res) => res.statusCode(200))
+.get(cors.cors, (req, res) => {
     Partner.findById(req.params.partnerId)
     .then(partner => {
         res.statusCode = 200;
-        res.setHeader('Content-Type', 'application/json');
+        res.setHeader('Content-type', 'text/plain');
         res.json(partner);
     })
     .catch(err => next(err));
 })
-.post(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
+.post(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res) => {
     res.statusCode = 403;
     res.end(`POST operation not supported on /partners/${req.params.partnerId}`);
 })
 .put(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     Partner.findByIdAndUpdate(req.params.partnerId, {
         $set: req.body
-    }, { new: true })
+}, {new:true })
     .then(partner => {
-        res.statusCode = 200;
-        res.setHeader('Content-Type', 'application/json');
-        res.json(partner);
+    res.statusCode = 200;
+    res.setHeader('Content-Type', 'application/json');
+    res.json(partner);
     })
     .catch(err => next(err));
 })
-.delete(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
+.delete(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res) => {
     Partner.findByIdAndDelete(req.params.partnerId)
     .then(response => {
         res.statusCode = 200;
@@ -78,6 +78,5 @@ partnerRouter.route('/:partnerId')
     })
     .catch(err => next(err));
 });
-
 
 module.exports = partnerRouter;
